@@ -1,0 +1,7 @@
+
+[categories.apps]
+name = "Mobile, desktop and web applications and games"
+
+[categories.games]
+name = "games"
+parent = "apps"
