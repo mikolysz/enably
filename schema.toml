@@ -2,6 +2,10 @@
 [categories.apps]
 name = "Mobile, desktop and web applications and games"
 
-[categories.games]
-name = "games"
+[categories.ios_apps]
+name = "Apps for iOS"
 parent = "apps"
+
+[categories.ios_games]
+name = "iOS Games"
+parent= "ios_apps"

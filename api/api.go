@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mikolysz/enably/model"
 )
 
@@ -22,6 +23,9 @@ type Dependencies struct {
 // New returns an http.Handler that responds to API requests.
 func New(deps Dependencies) http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.StripSlashes)
 
 	cat := newCategoriesAPI(deps.Metadata)
 	r.Mount("/categories", cat)

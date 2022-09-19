@@ -8,7 +8,7 @@ import (
 )
 
 type MetadataService interface {
-	GetTopLevelCategories() []*model.Category
+	GetRootCategory() *model.Category
 	GetCategory(slug string) (*model.Category, error)
 }
 
@@ -21,17 +21,16 @@ func newCategoriesAPI(metadata MetadataService) *categoriesAPI {
 	r := chi.NewRouter()
 	c := &categoriesAPI{r, metadata}
 
-	r.Get("/", c.getTopLevelCategories)
+	r.Get("/", c.getRootCategory)
 	r.Get("/{slug}", c.GetCategory)
 
 	return c
 }
 
-// GetTopLevelCategories returns all categories that have no parent.
-func (c *categoriesAPI) getTopLevelCategories(w http.ResponseWriter, r *http.Request) {
-	cats := c.meta.GetTopLevelCategories()
+func (c *categoriesAPI) getRootCategory(w http.ResponseWriter, r *http.Request) {
+	cat := c.meta.GetRootCategory()
 
-	jsonResponse(w, http.StatusOK, cats)
+	jsonResponse(w, http.StatusOK, cat)
 }
 
 func (c *categoriesAPI) GetCategory(w http.ResponseWriter, r *http.Request) {

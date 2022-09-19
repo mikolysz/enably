@@ -9,7 +9,7 @@ type MetadataService struct {
 
 // MetadataStore lets you retrieve information about categories and fieldsets.
 type MetadataStore interface {
-	GetTopLevelCategories() []*model.Category
+	GetTopLevelCategories() []*model.SubcategoryInfo
 	GetCategory(slug string) (*model.Category, error)
 }
 
@@ -18,9 +18,14 @@ func NewMetadataService(store MetadataStore) *MetadataService {
 	return &MetadataService{store}
 }
 
-// GetTopLevelCategories returns all categories that have no parent.
-func (s *MetadataService) GetTopLevelCategories() []*model.Category {
-	return s.store.GetTopLevelCategories()
+// GetRootCategory returns a dummy category that contains all top-level categories.
+func (s *MetadataService) GetRootCategory() *model.Category {
+	return &model.Category{
+		Slug:          "root",
+		Name:          "Root",
+		Parent:        "",
+		Subcategories: s.store.GetTopLevelCategories(),
+	}
 }
 
 // GetCategory returns the category with the given slug.
