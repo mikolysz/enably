@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { useApi } from "../../lib/api";
+import { GetStaticPaths, GetStaticProps } from "next";
+import { Category, SubcategoryInfo } from "../../lib/types";
 
-export function getStaticPaths() {
+export const getStaticPaths: GetStaticPaths = async () => {
   return {
     // FIXME: We should generate these statically, but recursively fetching all
     // categories would be annoying, and probably too slow in development.
@@ -9,17 +11,21 @@ export function getStaticPaths() {
 
     fallback: "blocking",
   };
-}
+};
 
-export function getStaticProps({ params }) {
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
     props: {
-      category_slugs: params.category_slugs ? params.category_slugs : [],
+      category_slugs: params?.category_slugs ? params.category_slugs : [],
     },
   };
+};
+
+interface Props {
+  category_slugs: string[];
 }
 
-export default function Categories({ category_slugs }) {
+export default function Categories({ category_slugs }: Props) {
   const isRootCategory = category_slugs.length === 0;
 
   const slug_to_fetch = isRootCategory
@@ -27,7 +33,8 @@ export default function Categories({ category_slugs }) {
     : category_slugs[category_slugs.length - 1];
   const path_to_fetch = `categories/${slug_to_fetch}`;
 
-  const { data: category, error: categories_error } = useApi(path_to_fetch);
+  const { data: category, error: categories_error } =
+    useApi<Category>(path_to_fetch);
 
   if (categories_error) {
     console.log(categories_error);
@@ -38,7 +45,7 @@ export default function Categories({ category_slugs }) {
     return <div>loading...</div>;
   }
 
-  const subcategory_link = ({ slug, is_leaf_category }) => {
+  const subcategory_link = ({ slug, is_leaf_category }: SubcategoryInfo) => {
     if (is_leaf_category) {
       return `/products/by-category/${slug}`;
     } else {
