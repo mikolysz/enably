@@ -1,11 +1,43 @@
 
 [categories.apps]
 name = "Mobile, desktop and web applications and games"
+fieldsets = ["basic_app_details"]
 
 [categories.ios_apps]
 name = "Apps for iOS"
 parent = "apps"
+fieldsets = ["ios_app_details"]
 
 [categories.ios_games]
 name = "iOS Games"
 parent= "ios_apps"
+fieldsets = ["game_details"]
+
+[fieldsets.basic_app_details]
+name = "Basic Info"
+
+[fieldsets.ios_app_details]
+name = "iOS-specific information"
+
+[fieldsets.game_details]    
+name = "Gaming-related information"
+
+[[fields.basic_app_details]]
+name = "app_name"
+label = "App Name"
+type = "short-text"
+
+[[fields.basic_app_details]]
+name = "app_description"
+label = "App Description"
+type = "textarea"
+
+[[fields.ios_app_details]]
+name = "app_store_link"
+label = "App Store Link"
+type = "short-text"
+
+[[fields.game_details]]
+name ="Genre"
+label = "Genre"
+type = "short-text"
