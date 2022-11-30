@@ -23,3 +23,9 @@ type SubcategoryInfo struct {
 	// IsLeafcategory is true if this subcategory has no further subcategories, but contains products instead.
 	IsLeafCategory bool `json:"is_leaf_category"`
 }
+
+// IsLeafCategory returns true if this category has no subcategories.
+// Leaf categories can only contain products, while non-leaf categories can contain other subcategories, but not products directly.
+func (c *Category) IsLeafCategory() bool {
+	return len(c.Subcategories) > 0
+}

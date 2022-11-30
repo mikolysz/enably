@@ -14,9 +14,14 @@ import (
 func main() {
 	metaStore := store.NewTOMLMetadataStore(enably.Schema)
 	meta := app.NewMetadataService(metaStore)
+	prod, err := app.NewProductsService(meta)
+	if err != nil {
+		log.Fatalf("Error when creating products service: %s", err)
+	}
 
 	deps := api.Dependencies{
 		Metadata: meta,
+		Products: prod,
 	}
 
 	a := api.New(deps)

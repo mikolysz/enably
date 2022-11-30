@@ -38,8 +38,8 @@ type category struct {
 	// We take the slug from the categories map, so we don't need to store it here.
 
 	Name      string
-	Parent    string //empty if this is a top-level category
-	Fieldsets []string
+	Parent    string   //empty if this is a top-level category
+	Fieldsets []string // FIXME: Rename to FieldsetNames, keeping the TOML field name via tags.
 }
 
 // NewTOMLMetadataStore returns a TOMLMetadataStore which uses the given TOML schema.
@@ -169,7 +169,7 @@ func (s *TOMLMetadataStore) GetFieldset(slug string) (*model.Fieldset, error) {
 	return fs, nil
 }
 
-// GetFieldsetsForCategory returnsa slice of fieldset slugs
+// GetFieldsetsForCategory returns a slice of fieldset slugs
 // for the given category.
 // Fieldsets from parent categories are not included.
 func (s *TOMLMetadataStore) GetFieldsetsForCategory(slug string) ([]string, error) {
@@ -182,4 +182,14 @@ func (s *TOMLMetadataStore) GetFieldsetsForCategory(slug string) ([]string, erro
 	}
 
 	return fieldsets, nil
+}
+
+// GetAllFieldsets returns all defined fieldsets.
+func (s *TOMLMetadataStore) GetAllFieldsets() ([]*model.Fieldset, error) {
+	fsets := make([]*model.Fieldset, 0, len(s.fieldsets))
+	for _, fset := range s.fieldsets {
+		fsets = append(fsets, fset)
+	}
+
+	return fsets, nil
 }

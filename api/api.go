@@ -18,6 +18,7 @@ type api struct {
 // Dependencies contains all the dependencies that the API needs.
 type Dependencies struct {
 	Metadata MetadataService
+	Products ProductsService
 }
 
 // New returns an http.Handler that responds to API requests.
@@ -29,6 +30,9 @@ func New(deps Dependencies) http.Handler {
 
 	cat := newCategoriesAPI(deps.Metadata)
 	r.Mount("/categories", cat)
+
+	prod := newProductsAPI(deps.Products)
+	r.Mount("/products", prod)
 
 	return &api{r}
 }

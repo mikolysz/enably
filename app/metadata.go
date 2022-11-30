@@ -16,7 +16,9 @@ type MetadataStore interface {
 	GetTopLevelCategories() []*model.SubcategoryInfo
 	GetCategory(slug string) (*model.Category, error)
 	GetFieldset(slug string) (*model.Fieldset, error)
+	// FIXME: rename to GetFieldsetNamesForCategory
 	GetFieldsetsForCategory(slug string) ([]string, error)
+	GetAllFieldsets() ([]*model.Fieldset, error)
 }
 
 // NewMetadataService returns a MetadataService which 	uses the given MetadataStore.
@@ -47,7 +49,7 @@ func (s *MetadataService) GetFieldsetsForCategory(slug string) ([]*model.Fieldse
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
 
-	// 	We want the fieldsets from the parent category to come first.
+	// 	We want the fieldsets from the parent categories to come first.
 	var fsets []*model.Fieldset
 	if cat.Parent != "" {
 		fsets, err = s.GetFieldsetsForCategory(cat.Parent)
@@ -75,7 +77,12 @@ func (s *MetadataService) GetFieldsetsForCategory(slug string) ([]*model.Fieldse
 	return fsets, nil
 }
 
-// GETSchemaForFieldset returns the JSON schema for the given fieldset.
+// GetAllFieldsets returns all defined fieldsets.
+func (s *MetadataService) GetAllFieldsets() ([]*model.Fieldset, error) {
+	return s.store.GetAllFieldsets()
+}
+
+// GetSchemaForFieldset returns the JSON schema for the given fieldset.
 func (s *MetadataService) GetSchemaForFieldset(fieldset *model.Fieldset) (map[string]any, error) {
 	props := make(map[string]any)
 
