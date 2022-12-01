@@ -13,12 +13,11 @@ type MetadataService struct {
 
 // MetadataStore lets you retrieve information about categories and fieldsets.
 type MetadataStore interface {
-	GetTopLevelCategories() []*model.SubcategoryInfo
-	GetCategory(slug string) (*model.Category, error)
-	GetFieldset(slug string) (*model.Fieldset, error)
-	// FIXME: rename to GetFieldsetNamesForCategory
-	GetFieldsetsForCategory(slug string) ([]string, error)
-	GetAllFieldsets() ([]*model.Fieldset, error)
+	TopLevelCategories() []*model.SubcategoryInfo
+	CategoryBySlug(slug string) (*model.Category, error)
+	FieldsetBySlug(slug string) (*model.Fieldset, error)
+	FieldsetNamesForCategory(slug string) ([]string, error)
+	AllFieldsets() ([]*model.Fieldset, error)
 }
 
 // NewMetadataService returns a MetadataService which 	uses the given MetadataStore.
@@ -32,19 +31,19 @@ func (s *MetadataService) GetRootCategory() *model.Category {
 		Slug:          "root",
 		Name:          "Root",
 		Parent:        "",
-		Subcategories: s.store.GetTopLevelCategories(),
+		Subcategories: s.store.TopLevelCategories(),
 	}
 }
 
 // GetCategory returns the category with the given slug.
 func (s *MetadataService) GetCategory(slug string) (*model.Category, error) {
-	return s.store.GetCategory(slug)
+	return s.store.CategoryBySlug(slug)
 }
 
 // GetFieldsetsForCategory 		returns the fieldsets that products in this category are covered by.
 // These include the fieldsets associate with this category, as well as the fieldsets associated with all its parent categories.
 func (s *MetadataService) GetFieldsetsForCategory(slug string) ([]*model.Fieldset, error) {
-	cat, err := s.store.GetCategory(slug)
+	cat, err := s.store.CategoryBySlug(slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
@@ -60,14 +59,14 @@ func (s *MetadataService) GetFieldsetsForCategory(slug string) ([]*model.Fieldse
 	}
 
 	// Get the fieldsets for this category.
-	names, err := s.store.GetFieldsetsForCategory(slug)
+	names, err := s.store.FieldsetNamesForCategory(slug)
 	if err != nil {
 		// If we can't get stuff from the schema, something must have gone seriously wrong.
 		panic(fmt.Sprintf("failed to get fieldsets for category: %v", err))
 	}
 
 	for _, name := range names {
-		fset, err := s.store.GetFieldset(name)
+		fset, err := s.store.FieldsetBySlug(name)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get fieldset: %v", err))
 		}
@@ -79,7 +78,7 @@ func (s *MetadataService) GetFieldsetsForCategory(slug string) ([]*model.Fieldse
 
 // GetAllFieldsets returns all defined fieldsets.
 func (s *MetadataService) GetAllFieldsets() ([]*model.Fieldset, error) {
-	return s.store.GetAllFieldsets()
+	return s.store.AllFieldsets()
 }
 
 // GetSchemaForFieldset returns the JSON schema for the given fieldset.

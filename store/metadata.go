@@ -37,18 +37,18 @@ type schema struct {
 type category struct {
 	// We take the slug from the categories map, so we don't need to store it here.
 
-	Name      string
-	Parent    string   //empty if this is a top-level category
-	Fieldsets []string // FIXME: Rename to FieldsetNames, keeping the TOML field name via tags.
+	Name          string
+	Parent        string   //empty if this is a top-level category
+	FieldsetSlugs []string `toml:"fieldsets"`
 }
 
 // NewTOMLMetadataStore returns a TOMLMetadataStore which uses the given TOML schema.
-func NewTOMLMetadataStore(schemaData []byte) *TOMLMetadataStore {
+func NewTOMLMetadataStore(schemaData []byte) (*TOMLMetadataStore, error) {
 	// Deserialize the TOML schema.
 	var s schema
 
 	if err := toml.Unmarshal(schemaData, &s); err != nil {
-		panic(fmt.Sprintf("failed to unmarshal schema: %v", err))
+		return nil, fmt.Errorf("failed to parse TOML schema: %w", err)
 	}
 
 	st := &TOMLMetadataStore{
@@ -57,38 +57,54 @@ func NewTOMLMetadataStore(schemaData []byte) *TOMLMetadataStore {
 		categoryFieldsets: make(map[string][]string),
 	}
 
-	st.populateFieldsets(s)
-	st.populateCategories(s)
-	st.associateFieldsetsWithCategories(s)
+	fieldsets, err := st.populateFieldsets(s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to populate fieldsets: %w", err)
+	}
+	st.fieldsets = fieldsets
 
-	return st
+	st.categories, err = st.populateCategories(s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to populate categories: %w", err)
+	}
+
+	st.topLevelCategories, err = st.populateTopLevelCategories()
+	if err != nil {
+		return nil, fmt.Errorf("failed to populate top-level categories: %w", err)
+	}
+
+	st.categoryFieldsets, err = st.associateFieldsetsWithCategories(s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set up field-category associations: %w", err)
+	}
+
+	return st, nil
 }
 
-// TODO: Refactor so that these functions return categories, fieldsets etc.
-
-func (st *TOMLMetadataStore) populateFieldsets(s schema) {
-	// Populate the fieldsets map in the store.
+func (st *TOMLMetadataStore) populateFieldsets(s schema) (map[string]*model.Fieldset, error) {
+	fsets := make(map[string]*model.Fieldset)
 	for slug, fs := range s.Fieldsets {
 		fs.Slug = slug
-		st.fieldsets[slug] = fs
+		fsets[slug] = fs
 	}
 
 	// Put the fields from s.Fields in their respective fieldsets.
 	for slug, fields := range s.Fields {
-		fs, ok := st.fieldsets[slug]
+		fs, ok := fsets[slug]
 
 		if !ok {
-			panic(fmt.Sprintf("no fieldset with slug %q", slug))
+			return nil, fmt.Errorf("found fields block for nonexistent fieldset with slug %q", slug)
 		}
 
 		fs.Fields = fields
 	}
+	return fsets, nil
 }
 
-func (st *TOMLMetadataStore) populateCategories(s schema) {
-	// Populate the categories map.
+func (st *TOMLMetadataStore) populateCategories(s schema) (map[string]*model.Category, error) {
+	cats := make(map[string]*model.Category)
 	for slug, cat := range s.Categories {
-		st.categories[slug] = &model.Category{
+		cats[slug] = &model.Category{
 			Slug:   slug,
 			Name:   cat.Name,
 			Parent: cat.Parent,
@@ -96,12 +112,12 @@ func (st *TOMLMetadataStore) populateCategories(s schema) {
 	}
 
 	// Populate the subcategory list of each category.
-	for _, cat := range st.categories {
+	for _, cat := range cats {
 		if cat.Parent == "" {
 			continue
 		}
 
-		parent, ok := st.categories[cat.Parent]
+		parent, ok := cats[cat.Parent]
 		if !ok {
 			panic(fmt.Sprintf("category %q has parent %q, but no such category exists", cat.Slug, cat.Parent))
 		}
@@ -113,38 +129,54 @@ func (st *TOMLMetadataStore) populateCategories(s schema) {
 	}
 
 	// Determine which subcategories are leaf categories.
-	for _, cat := range st.categories {
+	for _, cat := range cats {
 		for _, subcat := range cat.Subcategories {
-			subcat.IsLeafCategory = len(st.categories[subcat.Slug].Subcategories) == 0
+			subcat.IsLeafCategory = len(cats[subcat.Slug].Subcategories) == 0
 		}
 	}
+	return cats, nil
+}
 
-	// Populate the topLevelCategories slice.
+func (st *TOMLMetadataStore) associateFieldsetsWithCategories(s schema) (map[string][]string, error) {
+	catFieldsets := make(map[string][]string)
+	for catSlug, cat := range s.Categories {
+		// verify that the fieldsets exist
+		for _, fsSlug := range cat.FieldsetSlugs {
+			if _, ok := st.fieldsets[fsSlug]; !ok {
+				return nil, fmt.Errorf("category %q has nonexistent fieldset %q", catSlug, fsSlug)
+			}
+		}
+
+		catFieldsets[catSlug] = cat.FieldsetSlugs
+	}
+	return catFieldsets, nil
+}
+
+func (st *TOMLMetadataStore) populateTopLevelCategories() ([]*model.SubcategoryInfo, error) {
+	var topLevel []*model.SubcategoryInfo
+
 	for _, cat := range st.categories {
-		if cat.Parent == "" {
-			st.topLevelCategories = append(st.topLevelCategories, &model.SubcategoryInfo{
-				Slug:           cat.Slug,
-				Name:           cat.Name,
-				IsLeafCategory: len(cat.Subcategories) == 0,
-			})
+		if cat.Parent != "" {
+			continue
 		}
+
+		topLevel = append(topLevel, &model.SubcategoryInfo{
+			Slug:           cat.Slug,
+			Name:           cat.Name,
+			IsLeafCategory: len(cat.Subcategories) == 0,
+		})
 	}
+
+	return topLevel, nil
 }
 
-func (st *TOMLMetadataStore) associateFieldsetsWithCategories(s schema) {
-	for slug, cat := range s.Categories {
-		// FIXME: verify that the fieldsets mentioned here actually exist.
-		st.categoryFieldsets[slug] = cat.Fieldsets
-	}
-}
-
-// GetTopLevelCategories returns all categories that have no parent.
-func (s *TOMLMetadataStore) GetTopLevelCategories() []*model.SubcategoryInfo {
+// TopLevelCategories returns all categories that have no parent.
+func (s *TOMLMetadataStore) TopLevelCategories() []*model.SubcategoryInfo {
 	return s.topLevelCategories
 }
 
-// GetCategory returns the category with the given slug.
-func (s *TOMLMetadataStore) GetCategory(slug string) (*model.Category, error) {
+// CategoryBySlug returns the category with the given slug.
+func (s *TOMLMetadataStore) CategoryBySlug(slug string) (*model.Category, error) {
 	cat, ok := s.categories[slug]
 	if !ok {
 		return nil, &model.UserFacingError{
@@ -156,8 +188,8 @@ func (s *TOMLMetadataStore) GetCategory(slug string) (*model.Category, error) {
 	return cat, nil
 }
 
-// GetFieldset returns the fieldset with the given slug.
-func (s *TOMLMetadataStore) GetFieldset(slug string) (*model.Fieldset, error) {
+// FieldsetBySlug returns the fieldset with the given slug.
+func (s *TOMLMetadataStore) FieldsetBySlug(slug string) (*model.Fieldset, error) {
 	fs, ok := s.fieldsets[slug]
 	if !ok {
 		return nil, &model.UserFacingError{
@@ -169,10 +201,10 @@ func (s *TOMLMetadataStore) GetFieldset(slug string) (*model.Fieldset, error) {
 	return fs, nil
 }
 
-// GetFieldsetsForCategory returns a slice of fieldset slugs
+// FieldsetNamesForCategory returns a slice of fieldset slugs
 // for the given category.
 // Fieldsets from parent categories are not included.
-func (s *TOMLMetadataStore) GetFieldsetsForCategory(slug string) ([]string, error) {
+func (s *TOMLMetadataStore) FieldsetNamesForCategory(slug string) ([]string, error) {
 	fieldsets, ok := s.categoryFieldsets[slug]
 	if !ok {
 		return nil, &model.UserFacingError{
@@ -184,8 +216,8 @@ func (s *TOMLMetadataStore) GetFieldsetsForCategory(slug string) ([]string, erro
 	return fieldsets, nil
 }
 
-// GetAllFieldsets returns all defined fieldsets.
-func (s *TOMLMetadataStore) GetAllFieldsets() ([]*model.Fieldset, error) {
+// AllFieldsets returns all defined fieldsets.
+func (s *TOMLMetadataStore) AllFieldsets() ([]*model.Fieldset, error) {
 	fsets := make([]*model.Fieldset, 0, len(s.fieldsets))
 	for _, fset := range s.fieldsets {
 		fsets = append(fsets, fset)

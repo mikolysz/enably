@@ -12,7 +12,10 @@ import (
 )
 
 func main() {
-	metaStore := store.NewTOMLMetadataStore(enably.Schema)
+	metaStore, err := store.NewTOMLMetadataStore(enably.Schema)
+	if err != nil {
+		log.Fatalf("Failed to create metadata store: %s", err)
+	}
 	meta := app.NewMetadataService(metaStore)
 	prod, err := app.NewProductsService(meta)
 	if err != nil {

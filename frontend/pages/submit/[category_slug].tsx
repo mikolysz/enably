@@ -127,13 +127,12 @@ const ui_schema_for_fieldset = ({ fields }: Fieldset): UiSchema => {
 
 export default Submit;
 
-
 // FIXME: URLencode the slug, potential vulnerability here.
-const submit = (category_slug, data) => fetch(`/api/v1/products/${category_slug}`, {
-    method: 'post',
+const submit = (category_slug: string, data: any) =>
+  fetch(`/api/v1/products/${category_slug}`, {
+    method: "post",
     headers: {
-        'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-});
-// TODO: prettify
+  });

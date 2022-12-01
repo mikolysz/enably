@@ -20,7 +20,7 @@ type SubcategoryInfo struct {
 	Slug string `json:"slug"`
 	Name string `json:"name"`
 
-	// IsLeafcategory is true if this subcategory has no further subcategories, but contains products instead.
+	// IsLeafCategory is true if this subcategory has no further subcategories, but contains products instead.
 	IsLeafCategory bool `json:"is_leaf_category"`
 }
 

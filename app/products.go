@@ -74,7 +74,7 @@ func (s *ProductsService) CreateProduct(categorySlug string, jsonData []byte) er
 		fsetData, ok := fieldsets[fset.Slug]
 		if !ok {
 			// FIXME: This should cause a BadRequest, not an internalServerError.
-			return fmt.Errorf("Product in category %s doesn't contain fieldset %s", categorySlug, fset.Slug)
+			return fmt.Errorf("product in category %s doesn't contain fieldset %s", categorySlug, fset.Slug)
 		}
 		if err := s.schemas[fset.Slug].Validate(fsetData); err != nil {
 			// FIXME: This should cause a BadRequest, not an internalServerError.
