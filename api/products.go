@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mikolysz/enably/model"
 )
 
 // ProductsAPI provides operations to retrieve, create and update products.
@@ -14,7 +15,7 @@ type ProductsAPI struct {
 }
 
 type ProductsService interface {
-	CreateProduct(categorySlug string, jsonData []byte) error
+	CreateProduct(categorySlug string, jsonData []byte) (model.Product, error)
 }
 
 // NewProductsAPI returns a new ProductsAPI.
@@ -38,12 +39,11 @@ func (a *ProductsAPI) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.svc.CreateProduct(categorySlug, jsonData); err != nil {
+	prod, err := a.svc.CreateProduct(categorySlug, jsonData)
+	if err != nil {
 		errorResponse(w, err)
 		return
 	}
 
-	jsonResponse(w, http.StatusCreated, map[string]any{
-		"success": true,
-	})
+	jsonResponse(w, http.StatusCreated, prod)
 }

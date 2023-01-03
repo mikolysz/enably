@@ -1,12 +1,12 @@
 import Form from "@rjsf/core";
-import { UiSchema } from "@rjsf/utils";
+import { RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv6";
 import { useRouter } from "next/router";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useState, MouseEventHandler } from "react";
 
 import { useApi } from "../../lib/api";
-import { Fieldset } from "../../lib/types";
+import { Fieldset, Category, Schemas } from "../../lib/types";
 
 interface OnChange {
   formData: any;
@@ -30,31 +30,40 @@ export const getStaticProps: GetStaticProps = async (context) => {
 };
 
 const Submit = ({ category_slug }: { category_slug: string }) => {
-  const { data: fieldsets, error } = useApi<Fieldset[]>(
-    `categories/${category_slug}/fieldsets`
+  const { data: schemas, error: schemaError } = useApi<Schemas>(
+    `categories/${category_slug}/schemas`
   );
 
-  if (error) {
-    console.error(error);
-    return <div>Error loading fieldsets</div>;
+  if (schemaError) {
+    console.error(schemaError);
+    return <div>Error loading schemas</div>;
   }
 
-  if (!fieldsets) {
+  const { data: category, error: categoryError } = useApi<Category>(
+    `categories/${category_slug}`
+  );
+
+  if (categoryError) {
+    console.error(categoryError);
+    return <div>Error loading category</div>;
+  }
+
+  if (!schemas || !category) {
     return <div>Loading...</div>;
   }
 
-  return <SubmitPage category_slug={category_slug} fieldsets={fieldsets} />;
+  return <SubmitPage category={category} schemas={schemas} />;
 };
 
 const SubmitPage = ({
-  category_slug,
-  fieldsets,
+  schemas,
+  category,
 }: {
-  category_slug: string;
-  fieldsets: Fieldset[];
+  schemas: Schemas;
+  category: Category;
 }) => {
   let initialData: any = {};
-  for (let fieldset of fieldsets) {
+  for (let fieldset of category.fieldsets) {
     initialData[fieldset.slug] = {};
   }
 
@@ -62,13 +71,13 @@ const SubmitPage = ({
 
   const onSubmit: MouseEventHandler = (e) => {
     e.preventDefault();
-    submit(category_slug, data);
+    submit(category.slug, data);
   };
 
   return (
     <>
       <h1>Submit a product</h1>
-      {fieldsets.map((fieldset) => {
+      {category.fieldsets.map((fieldset) => {
         const onChange = (e: any) => {
           const newData = {
             ...data,
@@ -81,6 +90,7 @@ const SubmitPage = ({
           <Section
             key={fieldset.slug}
             fieldset={fieldset}
+            schema={schemas[fieldset.slug]}
             onChange={onChange}
             formData={data[fieldset.slug]}
           />
@@ -95,16 +105,18 @@ const Section = ({
   fieldset,
   onChange,
   formData,
+  schema,
 }: {
   fieldset: Fieldset;
   onChange: (data: OnChange) => void;
   formData: any;
+  schema: RJSFSchema;
 }) => {
   return (
     <>
       <h2>{fieldset.name}</h2>
       <Form
-        schema={fieldset.json_schema}
+        schema={schema}
         uiSchema={ui_schema_for_fieldset(fieldset)}
         validator={validator}
         onChange={onChange}

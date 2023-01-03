@@ -7,6 +7,7 @@ export interface Category {
   name: string;
   parent: string;
   subcategories: SubcategoryInfo[];
+  fieldsets: Fieldset[];
 }
 
 export interface SubcategoryInfo {
@@ -15,11 +16,14 @@ export interface SubcategoryInfo {
   is_leaf_category: boolean;
 }
 
+export interface Schemas {
+  [key: string]: RJSFSchema;
+}
+
 export interface Fieldset {
   slug: string;
   name: string;
   fields: Field[];
-  json_schema: RJSFSchema;
 }
 
 export interface Field {

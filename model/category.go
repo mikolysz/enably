@@ -13,6 +13,16 @@ type Category struct {
 
 	// Subcategories is a list of categories which this category is a parent of.
 	Subcategories []*SubcategoryInfo `json:"subcategories"`
+
+	// Fieldsets is a slice of fieldsets, each describing a single aspect of the products in this category.
+	// This includes fieldsets from parent categories.
+	Fieldsets []*Fieldset `json:"fieldsets"`
+
+	// NameField is the name of the field in the JSON document describing a product of this category which should be used as the product's name.
+	// The format is fieldset_slug.field_slug.
+	NameField, DescriptionField string
+	// FeaturedFields should be presented when displaying a list of products.
+	FeaturedFields []string
 }
 
 // SubcategoryInfo contains only the information needed to display a category in a list of subcategories.
@@ -21,6 +31,7 @@ type SubcategoryInfo struct {
 	Name string `json:"name"`
 
 	// IsLeafCategory is true if this subcategory has no further subcategories, but contains products instead.
+	// Non-leaf categories can contain other subcategories, but not products directly.
 	IsLeafCategory bool `json:"is_leaf_category"`
 }
 

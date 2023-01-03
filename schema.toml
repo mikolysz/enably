@@ -2,6 +2,8 @@
 [categories.apps]
 name = "Mobile, desktop and web applications and games"
 fieldsets = ["basic_app_details"]
+name_field = "basic_app_details.app_name"
+description_field = "basic_app_details.app_description"
 
 [categories.ios_apps]
 name = "Apps for iOS"
@@ -12,6 +14,7 @@ fieldsets = ["ios_app_details"]
 name = "iOS Games"
 parent= "ios_apps"
 fieldsets = ["game_details"]
+featured_fields = ["game_details.Genre"]
 
 [fieldsets.basic_app_details]
 name = "Basic Info"
