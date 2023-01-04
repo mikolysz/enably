@@ -16,6 +16,7 @@ type ProductsAPI struct {
 
 type ProductsService interface {
 	CreateProduct(categorySlug string, jsonData []byte) (model.Product, error)
+	GetProductsByCategory(categorySlug string) ([]model.Product, error)
 }
 
 // NewProductsAPI returns a new ProductsAPI.
@@ -26,7 +27,7 @@ func newProductsAPI(svc ProductsService) http.Handler {
 	}
 
 	a.r.Post("/{category_slug}", a.CreateProduct)
-
+	a.r.Get("/by-category/{category_slug}", a.GetProductsByCategory)
 	return a.r
 }
 
@@ -46,4 +47,16 @@ func (a *ProductsAPI) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, http.StatusCreated, prod)
+}
+
+func (a *ProductsAPI) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
+	categorySlug := chi.URLParam(r, "category_slug")
+
+	prods, err := a.svc.GetProductsByCategory(categorySlug)
+	if err != nil {
+		errorResponse(w, err)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, prods)
 }

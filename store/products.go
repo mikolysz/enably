@@ -29,3 +29,25 @@ func (s PostgresProductsStore) AddProduct(c context.Context, p model.Product) (m
 	}
 	return p, nil
 }
+
+// GetProductsByCategory returns all products in the category with the given slug.
+func (s PostgresProductsStore) GetProductsByCategory(c context.Context, slug string) ([]model.Product, error) {
+	query := "SELECT id, data FROM products WHERE category_slug = $1"
+
+	rows, err := s.db.Query(c, query, slug)
+	if err != nil {
+		return nil, fmt.Errorf("error when querying products: %s", err)
+	}
+	defer rows.Close()
+
+	var products []model.Product
+	for rows.Next() {
+		var p model.Product
+		if err := rows.Scan(&p.ID, &p.Data); err != nil {
+			return nil, fmt.Errorf("error when scanning product: %s", err)
+		}
+		p.CategorySlug = slug
+		products = append(products, p)
+	}
+	return products, nil
+}

@@ -31,3 +31,14 @@ export interface Field {
   label: string;
   type: string;
 }
+
+export interface Product {
+  id: number;
+  name: string;
+  category_slug: string;
+  description: string;
+  featured_fields: { [key: string]: any };
+
+  // fieldset_slug -> field_name -> field_value
+  data: { [key: string]: { [key: string]: any } };
+}
