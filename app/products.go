@@ -23,6 +23,7 @@ type ProductsService struct {
 type ProductsStore interface {
 	AddProduct(c context.Context, p model.Product) (model.Product, error)
 	GetProductsByCategory(c context.Context, slug string) ([]model.Product, error)
+	GetProductByID(c context.Context, id int) (model.Product, error)
 }
 
 // NewProductsService returns a new ProductsService.
@@ -119,6 +120,19 @@ func (s *ProductsService) GetProductsByCategory(categorySlug string) ([]model.Pr
 		}
 	}
 	return prods, nil
+}
+
+// GetProductByID returns the product with the specified ID.
+func (s *ProductsService) GetProductByID(id int) (model.Product, error) {
+	prod, err := s.store.GetProductByID(context.Background(), id)
+	if err != nil {
+		return model.Product{}, fmt.Errorf("error when retrieving product %d: %w", id, err)
+	}
+
+	if err := s.SetDerivedFields(&prod); err != nil {
+		return model.Product{}, fmt.Errorf("error when setting derived fields for product %d: %w", prod.ID, err)
+	}
+	return prod, nil
 }
 
 // SetDerivedFields sets the name, description and featured fields of the given product.

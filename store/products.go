@@ -51,3 +51,16 @@ func (s PostgresProductsStore) GetProductsByCategory(c context.Context, slug str
 	}
 	return products, nil
 }
+
+// GetProductByID returns the product with the given ID.
+func (s PostgresProductsStore) GetProductByID(c context.Context, id int) (model.Product, error) {
+	query := "SELECT id, category_slug, data FROM products WHERE id = $1"
+
+	var p model.Product
+	row := s.db.QueryRow(c, query, id)
+	if err := row.Scan(&p.ID, &p.CategorySlug, &p.Data); err != nil {
+		return model.Product{}, fmt.Errorf("error when querying product: %s", err)
+	}
+
+	return p, nil
+}

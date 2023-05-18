@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/mikolysz/enably/model"
 )
 
@@ -19,6 +20,7 @@ type api struct {
 type Dependencies struct {
 	Metadata MetadataService
 	Products ProductsService
+	Auth     AuthService
 }
 
 // New returns an http.Handler that responds to API requests.
@@ -27,6 +29,21 @@ func New(deps Dependencies) http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
+	r.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	auth := newAuthAPI(deps.Auth)
+	r.Use(auth.addAuthInfoToContext)
+
+	r.Mount("/auth", auth)
 
 	cat := newCategoriesAPI(deps.Metadata)
 	r.Mount("/categories", cat)

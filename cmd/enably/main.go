@@ -7,15 +7,24 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/mikolysz/enably"
 	"github.com/mikolysz/enably/api"
 	"github.com/mikolysz/enably/app"
+	"github.com/mikolysz/enably/pkg/email/sendgrid"
 	"github.com/mikolysz/enably/store"
 )
 
 func main() {
-	// FIXME: use environment variables
-	db, err := pgxpool.New(context.Background(), "postgres://enably:enably@localhost/enably_dev")
+	// We don't care if this errors out, a missing .env is fine.
+	godotenv.Load()
+
+	cfg, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error when loading config: %s", err)
+	}
+
+	db, err := pgxpool.New(context.Background(), cfg.dbConnectionString)
 	if err != nil {
 		log.Fatalf("Error when connecting to database: %s", err)
 	}
@@ -39,9 +48,21 @@ func main() {
 		log.Fatalf("Error when creating products service: %s", err)
 	}
 
+	sendgridConfig := sendgrid.Config{
+		APIKey:      cfg.sendgridAPIKey,
+		SenderEmail: cfg.senderEmail,
+		SenderName:  cfg.senderName,
+	}
+
+	emailSender := sendgrid.NewSender(sendgridConfig)
+
+	authStore := store.PostgresTokenStore{DB: db}
+	auth := app.NewAuthenticationService(authStore, emailSender)
+
 	deps := api.Dependencies{
 		Metadata: meta,
 		Products: prod,
+		Auth:     auth,
 	}
 
 	a := api.New(deps)

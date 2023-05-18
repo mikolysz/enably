@@ -1,11 +1,11 @@
 package model
 
 type Product struct {
-	ID           int
-	CategorySlug string
+	ID           int    `json:"id"`
+	CategorySlug string `json:"category_slug"`
 
 	// maps fieldset slugs to maps of field names to their values
-	Data map[string]map[string]any
+	Data map[string]map[string]any `json:"data"`
 
 	// The fields below aren't stored in the database,
 	// as they can be derived from the JSON data and the schema.

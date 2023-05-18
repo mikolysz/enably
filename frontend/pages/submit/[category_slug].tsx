@@ -7,6 +7,7 @@ import { useState, MouseEventHandler } from "react";
 
 import { useApi } from "../../lib/api";
 import { Fieldset, Category, Schemas } from "../../lib/types";
+import { PageWithLayout } from "../../components/Layout";
 
 interface OnChange {
   formData: any;
@@ -29,7 +30,11 @@ export const getStaticProps: GetStaticProps = async (context) => {
   };
 };
 
-const Submit = ({ category_slug }: { category_slug: string }) => {
+interface Props {
+  category_slug: string;
+}
+
+const Submit: PageWithLayout<Props> = ({ category_slug }) => {
   const { data: schemas, error: schemaError } = useApi<Schemas>(
     `categories/${category_slug}/schemas`
   );

@@ -1,7 +1,9 @@
+import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 import { useApi } from "../../lib/api";
-import { GetStaticPaths, GetStaticProps } from "next";
 import { Category, SubcategoryInfo } from "../../lib/types";
+
+import type { PageWithLayout } from "../../components/Layout";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
@@ -13,38 +15,43 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
+  // iw we navigate to /categories/ (AKA the root category) the param is missing, not empty.
+  const category_slugs = params?.category_slugs
+    ? (params.category_slugs as string[])
+    : [];
+
+  const isRootCategory = category_slugs.length === 0;
+
+  const slug_to_fetch = isRootCategory
+    ? ""
+    : category_slugs[category_slugs.length - 1];
+
+  const categoryResponse = await fetch(
+    `${process.env.API_URL}/categories/${slug_to_fetch}`
+  );
+  const category = await categoryResponse.json();
+
   return {
     props: {
-      category_slugs: params?.category_slugs ? params.category_slugs : [],
+      category,
+      category_slugs,
+      isRootCategory,
     },
   };
 };
 
 interface Props {
   category_slugs: string[];
+  category: Category;
+  isRootCategory: boolean;
 }
 
-export default function Categories({ category_slugs }: Props) {
-  const isRootCategory = category_slugs.length === 0;
-
-  const slug_to_fetch = isRootCategory
-    ? ""
-    : category_slugs[category_slugs.length - 1];
-  const path_to_fetch = `categories/${slug_to_fetch}`;
-
-  const { data: category, error: categories_error } =
-    useApi<Category>(path_to_fetch);
-
-  if (categories_error) {
-    console.log(categories_error);
-    return <div>failed to load</div>;
-  }
-
-  if (!category) {
-    return <div>loading...</div>;
-  }
-
+const Categories: PageWithLayout<Props> = ({
+  category_slugs,
+  category,
+  isRootCategory,
+}) => {
   const subcategory_link = ({ slug, is_leaf_category }: SubcategoryInfo) => {
     if (is_leaf_category) {
       return `/products/by-category/${slug}`;
@@ -57,11 +64,9 @@ export default function Categories({ category_slugs }: Props) {
     <>
       {isRootCategory ? <h1>Categories</h1> : <h1>{category.name}</h1>}
 
-      {isRootCategory || (
-        <p>
-          This category contains {category.subcategories.length} subcategories.
-        </p>
-      )}
+      <p>
+        This category contains {category.subcategories.length} subcategories.
+      </p>
 
       <ul>
         {category.subcategories.map((subcategory) => (
@@ -72,4 +77,9 @@ export default function Categories({ category_slugs }: Props) {
       </ul>
     </>
   );
-}
+};
+
+Categories.getTitle = ({ category, isRootCategory }) =>
+  `${isRootCategory ? "Categories" : category.name} | Enably`;
+
+export default Categories;

@@ -2,6 +2,7 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { Category, Product } from "../../../lib/types";
 import { useApi } from "../../../lib/api";
 import Link from "next/link";
+import { PageWithLayout } from "../../../components/Layout";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
@@ -12,44 +13,39 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const category_slug = params?.category_slug as string;
+  const productsResponse = await fetch(
+    `${process.env.API_URL}/products/by-category/${category_slug}`
+  );
+
+  const products = await productsResponse.json();
+
+  const categoryResponse = await fetch(
+    `${process.env.API_URL}/categories/${category_slug}`
+  );
+
+  const category = await categoryResponse.json();
+
   return {
     props: {
-      category_slug: params?.category_slug ? params.category_slug : "",
+      products,
+      category,
     },
   };
 };
 
-export default function CategoryPage({
-  category_slug,
-}: {
-  category_slug: string;
-}) {
-  const { data: products, error: products_error } = useApi<Product[]>(
-    `products/by-category/${category_slug}`
-  );
+interface Props {
+  products: Product[];
+  category: Category;
+}
 
-  const { data: category, error: category_error } = useApi<Category>(
-    `categories/${category_slug}`
-  );
-
-  if (products_error) {
-    console.log(products_error);
-    return <div>failed to load</div>;
-  }
-
-  if (category_error) {
-    console.log(category_error);
-    return <div>failed to load</div>;
-  }
-
-  if (!products || !category) {
-    return <div>loading...</div>;
-  }
-
+const CategoryPage: PageWithLayout<Props> = ({ products, category }) => {
   return (
     <>
       <h1>{category.name}</h1>
-      <Link href={`/submit/${category.slug}`}>Submit a product</Link>
+      <Link className="link-secondary" href={`/submit/${category.slug}`}>
+        Submit a product
+      </Link>
       <ul>
         {products.map((product) => (
           <li key={product.id}>
@@ -59,4 +55,8 @@ export default function CategoryPage({
       </ul>
     </>
   );
-}
+};
+
+CategoryPage.getTitle = ({ category }) => `${category.name} | Enably`;
+
+export default CategoryPage;

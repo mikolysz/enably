@@ -1,7 +1,8 @@
-import { AppProps } from 'next/app';
+import Layout, { AppPropsWithLayout } from "../components/Layout";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-function MyApp({ Component, pageProps }: AppProps) {  
-  return <Component {...pageProps} />;
+function MyApp(props: AppPropsWithLayout) {
+  return <Layout {...props} />;
 }
 
 export default MyApp;
