@@ -18,6 +18,7 @@ import {
 
 import CustomHead from "./CustomHead";
 import { LoginModal } from "./LoginModal";
+
 const defaultTitle =
   "Enably: Your go-to resource for accessible products and solutions.";
 
@@ -88,7 +89,7 @@ const LoginLink = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         toggle={toggleLoginModal}
-        redirectURI="/"
+        redirectURI=""
       />
     </>
   );

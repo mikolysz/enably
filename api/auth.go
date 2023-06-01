@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -71,6 +72,7 @@ type emailContextKey string
 func (a *authApi) addAuthInfoToContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		Header := r.Header.Get("Authorization")
+		log.Printf(Header)
 		if len(Header) < 8 || Header[:7] != "Bearer " {
 			next.ServeHTTP(w, r)
 			return

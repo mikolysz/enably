@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/mikolysz/enably/model"
 	"github.com/mikolysz/enably/pkg/email"
@@ -12,6 +13,7 @@ import (
 type AuthenticationService struct {
 	store       TokenStore
 	emailSender email.Sender
+	frontendURL *url.URL
 }
 
 type TokenStore interface {
@@ -20,10 +22,11 @@ type TokenStore interface {
 }
 
 // NewAuthenticationService creates a new AuthenticationService.
-func NewAuthenticationService(store TokenStore, emailSender email.Sender) AuthenticationService {
+func NewAuthenticationService(store TokenStore, emailSender email.Sender, frontendURL *url.URL) AuthenticationService {
 	return AuthenticationService{
 		store:       store,
 		emailSender: emailSender,
+		frontendURL: frontendURL,
 	}
 }
 
@@ -35,11 +38,19 @@ func (s AuthenticationService) SendLoginEmail(c context.Context, emailAddress, r
 		return err
 	}
 
+	authValues := url.Values{}
+	authValues.Set("token", token.Token)
+	authValues.Set("redirect_uri", redirectURI)
+
+	url := *s.frontendURL
+	url.Path = "authorize"
+	url.RawQuery = authValues.Encode()
+	urlStr := url.String()
 	msg := email.Message{
 		Recipient:        emailAddress,
 		Subject:          "Login to Enably",
-		PlainTextContent: "Click this link to login: " + redirectURI + "?token=" + token.Token,
-		HTMLContent:      "<p>Click this link to login: <a href=\"" + redirectURI + "?token=" + token.Token + "\">Login</a></p>",
+		PlainTextContent: "Click this link to login: " + urlStr,
+		HTMLContent:      "<p>Click this link to login: <a href=\"" + urlStr + "\">Login</a></p>",
 	}
 
 	if err := s.emailSender.Send(msg); err != nil {

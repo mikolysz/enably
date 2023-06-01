@@ -35,7 +35,7 @@ export const LoginModal = ({
 
     const loginRequest = {
       email,
-      redirect_uri: redirectURI,
+      redirect_uri: `${process.env.NEXT_PUBLIC_ROOT}/${redirectURI}`,
     };
 
     const response = await getAPIResponse("auth/login", {

@@ -57,7 +57,7 @@ func main() {
 	emailSender := sendgrid.NewSender(sendgridConfig)
 
 	authStore := store.PostgresTokenStore{DB: db}
-	auth := app.NewAuthenticationService(authStore, emailSender)
+	auth := app.NewAuthenticationService(authStore, emailSender, cfg.frontendURL)
 
 	deps := api.Dependencies{
 		Metadata: meta,

@@ -2,16 +2,17 @@ package model
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 // Token is a secure token authenticating a user with a specific email address.
 type Token struct {
-	ID        int64  `json:"id"`
-	Email     string `json:"email"`
-	Token     string `json:"token"`
-	CreatedAt int64  `json:"created_at"`
+	ID        int64     `json:"id"`
+	Email     string    `json:"email"`
+	Token     string    `json:"token"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 var ErrInvalidToken = UserFacingError{
