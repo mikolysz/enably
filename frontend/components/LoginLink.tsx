@@ -9,7 +9,7 @@ const LoginLink = (props: React.ComponentPropsWithoutRef<"a">) => {
     toggle();
   };
 
-  const href = props.href || "#";
+  props.href = props.href || "#";
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Col,
   Collapse,
@@ -77,10 +77,21 @@ const NavbarLink = ({ href, children }: { href: string; children: string }) => (
 );
 
 const LoginLink = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("token"));
+  });
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const toggleLoginModal = () => setIsLoginModalOpen(!isLoginModalOpen);
+
+  if (isLoggedIn) {
+    return <NavbarText>Signed In</NavbarText>;
+  }
+
   return (
     <>
+      <NavbarText>Not signed in</NavbarText>
       <NavItem>
         <NavLink href="#" onClick={toggleLoginModal}>
           Log In
@@ -106,7 +117,6 @@ const OurNavbar = () => {
         <Nav className="mr-auto" navbar>
           <NavbarLink href="/about">About</NavbarLink>
           <NavbarLink href="/categories">Browse</NavbarLink>
-          <NavbarText>Not signed in</NavbarText>
           <LoginLink />
         </Nav>
       </Collapse>
