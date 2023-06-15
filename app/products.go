@@ -144,6 +144,13 @@ func (s *ProductsService) GetProductsNeedingApproval() ([]model.Product, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error when retrieving products: %w", err)
 	}
+
+	for i := range prods {
+		if err := s.SetDerivedFields(&prods[i]); err != nil {
+			return nil, fmt.Errorf("error when setting derived fields for product %d: %w", prods[i].ID, err)
+		}
+	}
+
 	return prods, nil
 }
 
