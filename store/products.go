@@ -31,8 +31,9 @@ func (s PostgresProductsStore) AddProduct(c context.Context, p model.Product) (m
 }
 
 // GetProductsByCategory returns all products in the category with the given slug.
+// ONLY approved products are returned.
 func (s PostgresProductsStore) GetProductsByCategory(c context.Context, slug string) ([]model.Product, error) {
-	query := "SELECT id, data FROM products WHERE category_slug = $1"
+	query := "SELECT id, data, approved FROM products WHERE category_slug = $1 AND approved = true"
 
 	rows, err := s.db.Query(c, query, slug)
 	if err != nil {
@@ -43,7 +44,7 @@ func (s PostgresProductsStore) GetProductsByCategory(c context.Context, slug str
 	var products []model.Product
 	for rows.Next() {
 		var p model.Product
-		if err := rows.Scan(&p.ID, &p.Data); err != nil {
+		if err := rows.Scan(&p.ID, &p.Data, &p.Approved); err != nil {
 			return nil, fmt.Errorf("error when scanning product: %s", err)
 		}
 		p.CategorySlug = slug
@@ -54,13 +55,54 @@ func (s PostgresProductsStore) GetProductsByCategory(c context.Context, slug str
 
 // GetProductByID returns the product with the given ID.
 func (s PostgresProductsStore) GetProductByID(c context.Context, id int) (model.Product, error) {
-	query := "SELECT id, category_slug, data FROM products WHERE id = $1"
+	query := "SELECT id, category_slug, data, approved FROM products WHERE id = $1"
 
 	var p model.Product
 	row := s.db.QueryRow(c, query, id)
-	if err := row.Scan(&p.ID, &p.CategorySlug, &p.Data); err != nil {
+	if err := row.Scan(&p.ID, &p.CategorySlug, &p.Data, &p.Approved); err != nil {
 		return model.Product{}, fmt.Errorf("error when querying product: %s", err)
 	}
 
 	return p, nil
+}
+
+// GetProductsNeedingApproval 		returns all products that need approval by the mod team.
+func (s PostgresProductsStore) GetProductsNeedingApproval(c context.Context) ([]model.Product, error) {
+	query := "SELECT id, category_slug, data, approved FROM products WHERE approved = false"
+
+	rows, err := s.db.Query(c, query)
+	if err != nil {
+		return nil, fmt.Errorf("error when querying products: %s", err)
+	}
+	defer rows.Close()
+
+	var products []model.Product
+	for rows.Next() {
+		var p model.Product
+		if err := rows.Scan(&p.ID, &p.CategorySlug, &p.Data, &p.Approved); err != nil {
+			return nil, fmt.Errorf("error when scanning product: %s", err)
+		}
+		products = append(products, p)
+	}
+	return products, nil
+}
+
+// ApproveProduct 		approves the product with the given ID.
+func (s PostgresProductsStore) ApproveProduct(c context.Context, id int) error {
+	query := "UPDATE products SET approved = true WHERE id = $1"
+	_, err := s.db.Exec(c, query, id)
+	if err != nil {
+		return fmt.Errorf("error when approving product: %s", err)
+	}
+	return nil
+}
+
+// RejectProduct 		rejects the product with the given ID.
+func (s PostgresProductsStore) RejectProduct(c context.Context, id int) error {
+	query := "DELETE FROM products WHERE id = $1"
+	_, err := s.db.Exec(c, query, id)
+	if err != nil {
+		return fmt.Errorf("error when deleting product: %s", err)
+	}
+	return nil
 }

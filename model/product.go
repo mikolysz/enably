@@ -3,6 +3,7 @@ package model
 type Product struct {
 	ID           int    `json:"id"`
 	CategorySlug string `json:"category_slug"`
+	Approved     bool   `json:"approved"`
 
 	// maps fieldset slugs to maps of field names to their values
 	Data map[string]map[string]any `json:"data"`

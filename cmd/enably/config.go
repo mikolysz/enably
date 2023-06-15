@@ -12,6 +12,7 @@ type config struct {
 	senderName         string
 	sendgridAPIKey     string
 	frontendURL        *url.URL
+	moderationAPIKey   string
 }
 
 func loadConfig() (config, error) {
@@ -45,6 +46,9 @@ func loadConfig() (config, error) {
 		return config{}, fmt.Errorf("FRONTEND_URL %s is not a valid URL: %w", urlStr, err)
 	}
 
+	if err := c.setStringValue("MODERATION_API_KEY", &c.moderationAPIKey); err != nil {
+		return config{}, err
+	}
 	return c, nil
 }
 

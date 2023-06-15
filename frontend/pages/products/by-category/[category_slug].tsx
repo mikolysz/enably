@@ -3,6 +3,7 @@ import { Category, Product } from "../../../lib/types";
 import { useApi } from "../../../lib/api";
 import Link from "next/link";
 import { PageWithLayout } from "../../../components/Layout";
+import { LoginLink } from "../../../components/LoginLink";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
@@ -43,9 +44,9 @@ const CategoryPage: PageWithLayout<Props> = ({ products, category }) => {
   return (
     <>
       <h1>{category.name}</h1>
-      <Link className="link-secondary" href={`/submit/${category.slug}`}>
+      <LoginLink className="link-secondary" href={`/submit/${category.slug}`}>
         Submit a product
-      </Link>
+      </LoginLink>
       <ul>
         {products.map((product) => (
           <li key={product.id}>

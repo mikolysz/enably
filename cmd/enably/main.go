@@ -60,9 +60,10 @@ func main() {
 	auth := app.NewAuthenticationService(authStore, emailSender, cfg.frontendURL)
 
 	deps := api.Dependencies{
-		Metadata: meta,
-		Products: prod,
-		Auth:     auth,
+		Metadata:         meta,
+		Products:         prod,
+		Auth:             auth,
+		ModerationAPIKey: cfg.moderationAPIKey,
 	}
 
 	a := api.New(deps)

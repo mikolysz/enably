@@ -24,6 +24,9 @@ type ProductsStore interface {
 	AddProduct(c context.Context, p model.Product) (model.Product, error)
 	GetProductsByCategory(c context.Context, slug string) ([]model.Product, error)
 	GetProductByID(c context.Context, id int) (model.Product, error)
+	GetProductsNeedingApproval(c context.Context) ([]model.Product, error)
+	ApproveProduct(c context.Context, id int) error
+	RejectProduct(c context.Context, id int) error
 }
 
 // NewProductsService returns a new ProductsService.
@@ -133,6 +136,31 @@ func (s *ProductsService) GetProductByID(id int) (model.Product, error) {
 		return model.Product{}, fmt.Errorf("error when setting derived fields for product %d: %w", prod.ID, err)
 	}
 	return prod, nil
+}
+
+// GetProductsNeedingApproval returns all products that need approval by the mod team.
+func (s *ProductsService) GetProductsNeedingApproval() ([]model.Product, error) {
+	prods, err := s.store.GetProductsNeedingApproval(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error when retrieving products: %w", err)
+	}
+	return prods, nil
+}
+
+// ApproveProduct approves the product with the specified ID.
+func (s *ProductsService) ApproveProduct(id int) error {
+	if err := s.store.ApproveProduct(context.Background(), id); err != nil {
+		return fmt.Errorf("error when approving product %d: %w", id, err)
+	}
+	return nil
+}
+
+// RejectProduct rejects the product with the specified ID.
+func (s *ProductsService) RejectProduct(id int) error {
+	if err := s.store.RejectProduct(context.Background(), id); err != nil {
+		return fmt.Errorf("error when rejecting product %d: %w", id, err)
+	}
+	return nil
 }
 
 // SetDerivedFields sets the name, description and featured fields of the given product.

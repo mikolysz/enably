@@ -19,6 +19,9 @@ type ProductsService interface {
 	CreateProduct(categorySlug string, jsonData []byte) (model.Product, error)
 	GetProductsByCategory(categorySlug string) ([]model.Product, error)
 	GetProductByID(id int) (model.Product, error)
+	GetProductsNeedingApproval() ([]model.Product, error)
+	ApproveProduct(id int) error
+	RejectProduct(id int) error
 }
 
 // NewProductsAPI returns a new ProductsAPI.
