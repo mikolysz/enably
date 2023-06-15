@@ -4,7 +4,7 @@
 
 Enably is a platform designed to help people with disabilities find products that meet their accessibility needs. Our focus is currently on assisting those who are blind, but we may expand to serve individuals with other disabilities in the future.
 
-While there are often many options available in certain product categories, many of them can be difficult or impossible for blind people to use due to features such as touch controls. This is not just a problem with kitchen appliances, but also with mobile apps, websites, games, and even music and ham-radio equipment.
+While there are often many options available in certain product categories, many of them can be difficult or impossible for blind people to use due to features such as touch controls. Accessibility barriers can affect all kinds of products, from kitchen appliances, to mobile apps, websites, games, and even music and ham-radio equipment.
 
 Enably aims to be a comprehensive resource for accessibility information, offering ratings for products and any necessary workarounds or additional software that may be required to make them more accessible for those with visual impairments. All of our content is created by our users, allowing them to add new products or update existing ones as needed. With Enably, we hope to make it easy for those with disabilities to find the products they need to live their lives to the fullest.
 
@@ -16,21 +16,30 @@ Enably aims to be a comprehensive resource for accessibility information, offeri
 1. Create a postgres role called `enably` with password `enably`, and a database called `enably_dev`. Grant all privileges on that database to this role.
 1. Clone the repo.
 1. Run the migrations with `migrate -path=migrations -database='postgres://enably:enably@localhost/enably_dev?sslmode=disable' up`
+1. Copy .env..example to .env and fill in the missing values.
 1. Run the backend with `go run cmd/enably/main.go`. It will be available on localhost:8080.
-1. In another terminal, `cd frontent`, `npm install`, `npm run dev`.
+1. In another terminal, `cd frontent`, `npm install`, `API_URL='http://localhost:8080/api/v1' NEXT_PUBLIC_API_URL='http://localhost:8080/api/v1' NEXT_PUBLIC_ROOT='http://localhost:3000' npm run dev`.
 
- The frontent will be running on localhost:3000.
+The frontent will be running on localhost:3000.
 
 If you need to create new migrations, use the `migrate create -dir migrations -ext sql <migration_name>` command.
 
-As long as you work on things in the roadmap, you should be fine, but create an issue just in case.
+To use the moderation CLI, install the 'cmd/enctl' package and do:
 
+```bash
+export ENABLY_API_URL=http://localhost:8080 ENABLY_MODERATION_API_KEY=<your_key_from_.env>
+```
+
+And then use `enctl`.
+
+As long as you work on things in the roadmap, you should be fine, but create an issue just in case.
 
 ## Architecture notes:
 
 The frontend is a typical Next (and hence React JS) app. This allows us to easily get server-rendering, which will hopefully improve SEO, and that's something we care about. The backend is written in Go.
 
 Here are the most important backend packages:
+
 - `store`, deals purely with communicating with the database and retrieving data from static files.
 - `app`, contains the business logic, validation etc. Uses the store when necessary.
 - `api`, accepts requests and returns responses. Delegates most of the work to `app`.
