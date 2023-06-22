@@ -1,46 +1,238 @@
 
 [categories.apps]
 name = "Mobile, desktop and web applications and games"
-fieldsets = ["basic_app_details"]
-name_field = "basic_app_details.app_name"
-description_field = "basic_app_details.app_description"
+fieldsets = ["software"]
+name_field = "software.name"
+description_field = "software.description"
+featured_fields = ["software.name", "software.platform", "software.accessibility_rating", "software.free_or_paid"]
 
-[categories.ios_apps]
-name = "Apps for iOS"
+[categories.book_apps]
+name = "Apps for reading and listening to books"
 parent = "apps"
-fieldsets = ["ios_app_details"]
 
-[categories.ios_games]
-name = "iOS Games"
-parent= "ios_apps"
-fieldsets = ["game_details"]
-featured_fields = ["game_details.Genre"]
+[categories.games]
+name = "Games"
+parent = "apps"
 
-[fieldsets.basic_app_details]
-name = "Basic Info"
+[categories.blindness_apps]
+name = "Apps that help blind people with independent living"
+parent = "apps"
 
-[fieldsets.ios_app_details]
-name = "iOS-specific information"
+[categories.financial_apps]
+name = "Apps for banking, stock trading and Personal Finance"
+parent = "apps"
 
-[fieldsets.game_details]    
-name = "Gaming-related information"
+[categories.social_and_communication_apps]
+name = "Apps for social networking and communication"
+parent = "apps"
 
-[[fields.basic_app_details]]
-name = "app_name"
-label = "App Name"
+[categories.enterprise_apps]
+name = "Collaboration and task management apps and other software often used at work"
+parent = "apps"
+
+[categories.screen_readers]
+name = "Screen readers"
+parent = "apps"
+
+[categories.navigation_apps]
+name = "Apps that help with GPS navigation, mobility and public transit"
+parent = "apps"
+
+[categories.players]
+name = "Software for playing and streaming music or videos"
+parent = "apps"
+
+[categories.audio_apps]
+name = "Audio editors, DAWs, music-making software and plugins"
+parent = "apps"
+
+[categories.education_apps]
+name = "Education apps"
+parent = "apps"
+
+[categories.productivity_apps]
+name = "Writing, notetaking and personal productivity apps"
+parent = "apps"
+
+[categories.coding_apps]
+name = "Apps often used for programming, database and cloud management, text console access and other tasks requiring technical expertise"
+parent = "apps"
+
+[categories.other_apps]
+names = "Software that doesn't fit in other categories"
+parent = "apps"
+
+[fieldsets.software]
+name = "Basic information about this application"
+
+
+[[fields.software]]
+name = "name"
+label = "Application Name"
 type = "short-text"
 
-[[fields.basic_app_details]]
-name = "app_description"
-label = "App Description"
+[[fields.software]]
+name = "description"
+label = "Application Description"
+type = "textarea"
+description = "A short description of what the app is for"
+
+[[fields.software]]
+name = "platform"
+label = "Operating System"
+type = "dropdown"
+options = [
+    "Windows",
+    "iOS",
+    "Android",
+    "web",
+    "Linux",
+    "Watch OS",
+    "TV OS (Apple TV)",
+    "Chrome OS",
+    "Play Station",
+    "Xbox",
+    "Web OS (LG TVs)",
+    "Tizen (Samsung TVs)",
+]
+
+
+[[fields.software]]
+name = "download_url"
+label = "Download or purchase URL"
+type = "url"
+
+[[fields.software]]
+name ="developer"
+label = "Developer"
+type = "short-text"
+
+[[fields.software]]
+name = "free_or_paid"
+label   = "Is this software free or paid?"
+type = "radio-buttons"
+options = ["Free", "Paid"]
+
+[[fields.software]]
+name = "price"
+label = "Price"
+type = "short-text"
+description = "If this software is paid, how much does it cost?"
+optional = true
+
+[[fields.software]]
+name = "accessibility_rating"
+label = "Accessibility Rating"
+type = "radio-buttons"
+options = ["Completely inaccessible", "Mostly Inaccessible", "Has accessibility issues", "Fully Accessible"]
+
+[[fields.software]]
+name = "accessibility_approach"
+label = "Approach to Accessibility"
+description = "How does the developer of this app approach accessibility?"
+type = "radio-buttons"
+options = [
+    "The app is made for the blind or with the blind in mind",
+    "The developers care about blind users and fix issues quickly",
+    "The developers seem to care, but issues take a while to fix and are sometimes left unfixed",
+    "The developers say that they care, but accessibility issues are rarely ever fixed",
+    "The developers have releatedly ignored accessibility feedback"
+]
+
+
+[[fields.software]]
+name = "accessibility_issues"
+label = "Accessibility Issues"
+description = "What accessibility issues does this app have, if any?"
 type = "textarea"
 
-[[fields.ios_app_details]]
-name = "app_store_link"
-label = "App Store Link"
+[categories.appliances]
+name = "Microwaves, coffee machines and other appliances"
+fieldsets = ["physical_product", "appliance"]
+featured_fields = ["physical_product.model", "physical_product.price", "appliance.accessibility_rating"]
+name_field = "physical_product.model"
+description_field = "physical_product.description"
+
+[categories.appliances.microwaves]
+name = "Microwaves"
+parent = "appliances"
+
+[categories.appliances.coffee_machines]
+name = "Coffee Machines"
+parent = "appliances"
+
+[categories.appliances.stoves]
+name = "Gas and induction Stoves"
+parent = "appliances"
+
+[categories.appliances.kitchen_appliances]
+name = "appliances used for preparing food"
+parent = "appliances"
+
+
+[fieldsets.physical_product]
+name ="Basic product information"
+
+[[fields.physical_product]]
+name = "model"
+label = "Model Name"
 type = "short-text"
 
-[[fields.game_details]]
-name ="Genre"
-label = "Genre"
+[[fields.physical_product]]
+name = "description"
+label = "Product Description"
+type = "textarea"
+
+[[fields.physical_product]]
+name = "price"
+label = "Price"
 type = "short-text"
+
+[[fields.physical_product]]
+name = "purchase_url"
+label = "Purchase URL"
+type = "url"
+
+
+[fieldsets.appliance]
+name = "Appliance-specific information"
+
+[[fields.appliance]]
+name = "accessibility_rating"
+label = "Accessibility Rating"
+type = "radio-buttons"
+options = [
+    "Fully accessible",
+    "Can be used with issues",
+    "barely accessible",
+    "completely inaccessible"
+]
+
+[[fields.appliance]]
+name = "accessibility_issues"
+label = "Accessibility Issues"
+type = "textarea"
+
+[[fields.appliance]]
+name = "talks"
+label = "Does the device provide spoken announcements?"
+type = "checkbox"
+
+[[fields.appliance]]
+name = "controls"
+label = "Controls used?"
+type = "radio-buttons"
+options = [
+    "Physical buttons",
+    "Touch sensors requiring significant pressure",
+    "Touch sensors that activate even for soft touches",
+    "A full touch screen, supporting scrolling and multiple menu levels"
+]
+
+[[fields.appliance]]
+name = "control_layout"
+label = "Control Layout"
+description = "If possible, please describe how the controls are laid out"
+type = "textarea"
+optional = true
+

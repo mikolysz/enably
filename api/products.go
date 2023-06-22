@@ -64,6 +64,11 @@ func (a *ProductsAPI) GetProductsByCategory(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// If there are no products, we want an empty array, not null.
+	if prods == nil {
+		prods = []model.Product{}
+	}
+
 	jsonResponse(w, http.StatusOK, prods)
 }
 

@@ -122,7 +122,7 @@ const Section = ({
       <h2>{fieldset.name}</h2>
       <Form
         schema={schema}
-        uiSchema={ui_schema_for_fieldset(fieldset)}
+        uiSchema={uiSchemaForFieldset(fieldset)}
         validator={validator}
         onChange={onChange}
         formData={formData}
@@ -131,7 +131,7 @@ const Section = ({
   );
 };
 
-const ui_schema_for_fieldset = ({ fields }: Fieldset): UiSchema => {
+const uiSchemaForFieldset = ({ fields }: Fieldset): UiSchema => {
   const schema: UiSchema = {
     "ui:submitButtonOptions": {
       norender: true,
@@ -139,6 +139,19 @@ const ui_schema_for_fieldset = ({ fields }: Fieldset): UiSchema => {
     "ui:order": fields.map((field) => field.name),
   };
 
+  const widgetTypes = {
+    textarea: "textarea",
+    dropdown: "select",
+    "radio-buttons": "radio",
+  };
+
+  for (let field of fields) {
+    if (field.type in widgetTypes) {
+      schema[field.name] = {
+        "ui:widget": widgetTypes[field.type as keyof typeof widgetTypes],
+      };
+    }
+  }
   return schema;
 };
 

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/mikolysz/enably/model"
 )
 
@@ -69,23 +67,43 @@ func (s *MetadataService) getSchemaForFieldset(fieldset *model.Fieldset) (map[st
 	props := make(map[string]any)
 
 	for _, field := range fieldset.Fields {
-		props[field.Name] = map[string]any{
-			"type":  getSchemaType(field.Type),
-			"title": field.Label,
+		props[field.Name] = getSchemaForField(field)
+	}
+
+	required := make([]string, 0, len(fieldset.Fields))
+	for _, field := range fieldset.Fields {
+		if !field.Optional {
+			required = append(required, field.Name)
 		}
 	}
+
 	return map[string]any{
 		"type":       "object",
 		"properties": props,
+		"required":   required,
 	}, nil
 }
 
-// get	SchemaType returns the JSON schema type for the given field type.
-func getSchemaType(fieldType string) string {
-	switch fieldType {
-	case "short-text", "textarea":
-		return "string"
-	default:
-		panic(fmt.Sprintf("unknown field type: %v", fieldType))
+// getSchemaForField returns the JSON schema for the given field.
+func getSchemaForField(field *model.Field) map[string]any {
+	schema := map[string]any{
+		"title": field.Label,
 	}
+
+	switch field.Type {
+	case "short-text", "textarea", "url", "radio-buttons", "dropdown":
+		schema["type"] = "string"
+	case "checkbox":
+		schema["type"] = "boolean"
+	}
+
+	if field.Type == "url" {
+		schema["format"] = "uri"
+	}
+
+	if field.Type == "radio-buttons" || field.Type == "dropdown" {
+		schema["enum"] = field.Options
+	}
+
+	return schema
 }
