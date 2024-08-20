@@ -24,7 +24,7 @@ type ProductsStore interface {
 	AddProduct(c context.Context, p model.Product) (model.Product, error)
 	GetProductsByCategory(c context.Context, slug string) ([]model.Product, error)
 	GetProductByID(c context.Context, id int) (model.Product, error)
-	GetProductsNeedingApproval(c context.Context) ([]model.Product, error)
+	GetProductsRequiringApproval(c context.Context) ([]model.Product, error)
 	ApproveProduct(c context.Context, id int) error
 	RejectProduct(c context.Context, id int) error
 }
@@ -138,9 +138,9 @@ func (s *ProductsService) GetProductByID(id int) (model.Product, error) {
 	return prod, nil
 }
 
-// GetProductsNeedingApproval returns all products that need approval by the mod team.
+// GetProductsRequiringApproval returns all products that need approval by the mod team.
 func (s *ProductsService) GetProductsNeedingApproval() ([]model.Product, error) {
-	prods, err := s.store.GetProductsNeedingApproval(context.Background())
+	prods, err := s.store.GetProductsRequiringApproval(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error when retrieving products: %w", err)
 	}

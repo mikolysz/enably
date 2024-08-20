@@ -28,7 +28,6 @@ func (s PostgresTokenStore) AddToken(c context.Context, t model.Token) (model.To
 // GetByTokenContents 		returns the token with the given contents.
 // returns model.ErrInvalidToken if the token does not exist.
 func (s PostgresTokenStore) GetByTokenContents(c context.Context, token string) (model.Token, error) {
-
 	query := "SELECT id, email_address, token, created_at FROM session_tokens WHERE token = $1"
 
 	var t model.Token

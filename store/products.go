@@ -66,8 +66,8 @@ func (s PostgresProductsStore) GetProductByID(c context.Context, id int) (model.
 	return p, nil
 }
 
-// GetProductsNeedingApproval 		returns all products that need approval by the mod team.
-func (s PostgresProductsStore) GetProductsNeedingApproval(c context.Context) ([]model.Product, error) {
+// GetProductsRequiringApproval 		returns all products that need approval by the mod team.
+func (s PostgresProductsStore) GetProductsRequiringApproval(c context.Context) ([]model.Product, error) {
 	query := "SELECT id, category_slug, data, approved FROM products WHERE approved = false"
 
 	rows, err := s.db.Query(c, query)

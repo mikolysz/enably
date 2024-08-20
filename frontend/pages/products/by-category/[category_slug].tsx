@@ -40,20 +40,41 @@ interface Props {
   category: Category;
 }
 
+const AddProductLink = ({
+  className,
+  categorySlug,
+  children,
+}: {
+  className?: string;
+  categorySlug: string;
+  children: React.ReactNode;
+}) => <LoginLink href={`/submit/${categorySlug}`}>{children}</LoginLink>;
+
 const CategoryPage: PageWithLayout<Props> = ({ products, category }) => {
+  const productsList = (
+    <ul>
+      {products.map((product) => (
+        <li key={product.id}>
+          <a href={`/products/${product.id}`}>{product.name}</a>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <>
-      <h1>{category.name}</h1>
-      <LoginLink className="link-secondary" href={`/submit/${category.slug}`}>
-        Submit a product
-      </LoginLink>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <a href={`/products/${product.id}`}>{product.name}</a>
-          </li>
-        ))}
-      </ul>
+      <h1>{category.short_description}</h1>
+      <AddProductLink categorySlug={category.slug} className="link-secondary">
+        Add New Product
+      </AddProductLink>
+      {products.length > 0 ? (
+        productsList
+      ) : (
+        <p>
+          There are no products in this category yet. Maybe you'd like to{" "}
+          <AddProductLink categorySlug={category.slug}>Add one</AddProductLink>?
+        </p>
+      )}
     </>
   );
 };

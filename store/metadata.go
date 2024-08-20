@@ -33,9 +33,10 @@ type schema struct {
 type category struct {
 	// We take the slug from the section header, so we don't need to store it here.
 
-	Name          string
-	Parent        string   //empty if this is a top-level category
-	FieldsetSlugs []string `toml:"fieldsets"`
+	Name             string
+	ShortDescription string   `toml:"short_description"`
+	Parent           string   //empty if this is a top-level category
+	FieldsetSlugs    []string `toml:"fieldsets"`
 
 	// field names of the form fieldset.field_name.
 	// If empty, take from parent.
@@ -98,10 +99,15 @@ func (st *TOMLMetadataStore) populateCategories(s schema) (map[string]*model.Cat
 		cats[slug] = &model.Category{
 			Slug:             slug,
 			Name:             cat.Name,
+			ShortDescription: cat.ShortDescription,
 			Parent:           cat.Parent,
 			NameField:        cat.NameField,
 			DescriptionField: cat.DescriptionField,
 			FeaturedFields:   cat.FeaturedFields,
+		}
+
+		if cat.ShortDescription == "" {
+			cats[slug].ShortDescription = cat.Name
 		}
 	}
 
@@ -113,7 +119,6 @@ func (st *TOMLMetadataStore) populateCategories(s schema) (map[string]*model.Cat
 				Name: cat.Name,
 			})
 		} else {
-
 			parent, ok := cats[cat.Parent]
 			if !ok {
 				panic(fmt.Sprintf("category %q has parent %q, but no such category exists", cat.Slug, cat.Parent))
@@ -139,11 +144,9 @@ func (st *TOMLMetadataStore) populateCategories(s schema) (map[string]*model.Cat
 		cat.IsLeafCategory = len(cats[cat.Slug].Subcategories) == 0
 	}
 
-	// set up inheritance of fields from parent categories.
-	// We start at root categories, and descend recursively.
-
+	// Make categories inherit fields from their parents.
+	// We start with the top-level categories and descend recursively.
 	for _, cat := range st.topLevelCategories {
-
 		if err := st.inheritFields(cat.Slug, cats, s.Categories); err != nil {
 			return nil, err
 		}
@@ -157,7 +160,7 @@ func (st *TOMLMetadataStore) inheritFields(slug string, cats map[string]*model.C
 	if cat.Parent != "" {
 		parent := cats[cat.Parent]
 
-		cat.Fieldsets = append(parent.Fieldsets, cat.Fieldsets...)
+		cat.Fieldsets = append(parent.Fieldsets[:], cat.Fieldsets...)
 
 		if cat.NameField == "" {
 			cat.NameField = parent.NameField

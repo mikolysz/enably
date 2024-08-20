@@ -5,6 +5,7 @@ import { RJSFSchema } from "@rjsf/utils";
 export interface Category {
   slug: string;
   name: string;
+  short_description: string;
   parent: string;
   subcategories: SubcategoryInfo[];
   fieldsets: Fieldset[];

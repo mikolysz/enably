@@ -17,38 +17,37 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   // iw we navigate to /categories/ (AKA the root category) the param is missing, not empty.
-  const category_slugs = params?.category_slugs
-    ? (params.category_slugs as string[])
-    : [];
+  // If it is not empty, Next guarantees it is an array of strings because of the path.
+  const categorySlugs = (params?.category_slugs ?? []) as string[];
 
-  const isRootCategory = category_slugs.length === 0;
+  const isRootCategory = categorySlugs.length === 0;
 
-  const slug_to_fetch = isRootCategory
+  const slugToFetch = isRootCategory
     ? ""
-    : category_slugs[category_slugs.length - 1];
+    : categorySlugs[categorySlugs.length - 1];
 
   const categoryResponse = await fetch(
-    `${process.env.API_URL}/categories/${slug_to_fetch}`
+    `${process.env.API_URL}/categories/${slugToFetch}`
   );
   const category = await categoryResponse.json();
 
   return {
     props: {
       category,
-      category_slugs,
+      categorySlugs,
       isRootCategory,
     },
   };
 };
 
 interface Props {
-  category_slugs: string[];
+  categorySlugs: string[];
   category: Category;
   isRootCategory: boolean;
 }
 
 const Categories: PageWithLayout<Props> = ({
-  category_slugs,
+  categorySlugs,
   category,
   isRootCategory,
 }) => {
@@ -56,13 +55,17 @@ const Categories: PageWithLayout<Props> = ({
     if (is_leaf_category) {
       return `/products/by-category/${slug}`;
     } else {
-      return `/categories/${category_slugs.join("/")}/${slug}`;
+      return `/categories/${categorySlugs.join("/")}/${slug}`;
     }
   };
 
   return (
     <>
-      {isRootCategory ? <h1>Categories</h1> : <h1>{category.name}</h1>}
+      {isRootCategory ? (
+        <h1>Categories</h1>
+      ) : (
+        <h1>{category.short_description}</h1>
+      )}
 
       <p>
         This category contains {category.subcategories.length} subcategories.

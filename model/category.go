@@ -7,6 +7,8 @@ type Category struct {
 	// Name is human-readable.
 	Name string `json:"name"`
 
+	ShortDescription string `json:"short_description"`
+
 	// Parent is the slug of the parent category, if any.
 	// If this is a top-level category, it is empty.
 	Parent string `json:"parent,omitempty"`
@@ -18,9 +20,11 @@ type Category struct {
 	// This includes fieldsets from parent categories.
 	Fieldsets []*Fieldset `json:"fieldsets"`
 
-	// NameField is the name of the field in the JSON document describing a product of this category which should be used as the product's name.
+	// NameField and DescriptionField indicate which fields in the products' JSON representations contain their names and descriptions.
+	// This is used when displaying a list of products.
 	// The format is fieldset_slug.field_slug.
 	NameField, DescriptionField string
+
 	// FeaturedFields should be presented when displaying a list of products.
 	FeaturedFields []string
 }
