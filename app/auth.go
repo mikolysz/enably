@@ -40,6 +40,7 @@ func (s AuthenticationService) SendLoginEmail(c context.Context, emailAddress, r
 
 	authValues := url.Values{}
 	authValues.Set("token", token.Token)
+	// FIXME: Use different tokens for initial authentication and keeping the session, that's more secure.
 	authValues.Set("redirect_uri", redirectURI)
 
 	url := *s.frontendURL
@@ -56,7 +57,7 @@ func (s AuthenticationService) SendLoginEmail(c context.Context, emailAddress, r
 	if err := s.emailSender.Send(msg); err != nil {
 		return fmt.Errorf("error when sending login: %w", err)
 	}
-	// FIXME: security: ensure redirectURI points to our own domain
+	// FIXME: security: ensure redirectURI points to our own domain just in case.
 
 	return nil
 }

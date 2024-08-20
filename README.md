@@ -13,7 +13,7 @@ Enably aims to be a comprehensive resource for accessibility information, offeri
 ## How to contribute:
 
 1. Install Node, Postgres, Go and [golang-migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate).
-1. Create a postgres role called `enably` with password `enably`, and a database called `enably_dev`. Grant all privileges on that database to this role.
+1. Create a postgres role called `enably` with password `enably`, and a database called `enably_dev`. Grant all privileges on that database to this role. You can use different credentials, but you'll need to update the later steps accordingly.
 1. Clone the repo.
 1. Run the migrations with `migrate -path=migrations -database='postgres://enably:enably@localhost/enably_dev?sslmode=disable' up`
 1. Copy .env..example to .env and fill in the missing values.
